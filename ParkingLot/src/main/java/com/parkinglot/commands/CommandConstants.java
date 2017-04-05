@@ -1,4 +1,4 @@
-package com.parkinglot.main;
+package com.parkinglot.commands;
 
 public enum CommandConstants {
 

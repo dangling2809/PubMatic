@@ -83,7 +83,6 @@ public class CarParkingLot implements ParkingLot<Car>{
 			return maxSize;
 		}catch(NumberFormatException e)
 		{
-			e.printStackTrace();
 			throw new InvalidParkingLotSizeException("Invalid size for parking lot must be a number > 0");
 		}
 	}
@@ -123,14 +122,19 @@ public class CarParkingLot implements ParkingLot<Car>{
 		try{
 			int parkingSlotNumber=Integer.parseInt(parkingSlotNumberStr);
 			ParkingSpace parkingSpace=parkingSpaces.get(parkingSlotNumber);
-			parkingSpace.setVacant(true);
-			Car c=parkingSpace.getCar();
-			String carColor=c.getColor();
-			colorToParkingSlotNumberMap.get(carColor).remove(parkingSlotNumber);
-			colorToRegistrationNumberMap.get(carColor).remove(c.getRegNo());
-			registrationNumberToSlotNumberMap.remove(c.getRegNo());
-			numberOfCarsParked.getAndDecrement();
-			System.out.println("Slot number "+ parkingSlotNumber +" is free");
+			if(!parkingSpace.isVacant())
+			{
+				parkingSpace.setVacant(true);
+				Car c=parkingSpace.getCar();
+				String carColor=c.getColor();
+				colorToParkingSlotNumberMap.get(carColor).remove(parkingSlotNumber);
+				colorToRegistrationNumberMap.get(carColor).remove(c.getRegNo());
+				registrationNumberToSlotNumberMap.remove(c.getRegNo());
+				numberOfCarsParked.getAndDecrement();
+				System.out.println("Slot number "+ parkingSlotNumber +" is free");
+			}else{
+				System.out.println("Slot number "+ parkingSlotNumber +" is not occupied");
+			}
 		}catch(NumberFormatException ex)
 		{
 			System.out.println("Inalid Parking Slot Number");

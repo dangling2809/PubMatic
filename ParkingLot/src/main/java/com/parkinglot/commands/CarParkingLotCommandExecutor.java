@@ -1,4 +1,4 @@
-package com.parkinglot.main;
+package com.parkinglot.commands;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -7,13 +7,22 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.parkinglot.domain.Car;
+import com.parkinglot.exceptions.InvalidCommandException;
 import com.parkinglot.service.CarParkingLot;
 import com.parkinglot.service.ParkingLot;
 
+/**
+ * Immutable parking lot command executor.
+ * Use this class to parse/execute command line input both file/interactive mode.
+ *  
+ * @author Piyush
+ *
+ */
 public final class CarParkingLotCommandExecutor {
 	
 	private final Map<String,Method> commandMap;
@@ -26,6 +35,11 @@ public final class CarParkingLotCommandExecutor {
 		initializeCommandMap();
 	}
 
+	/**
+	 * Init method to be call from constructor to create a map of commands and method to be executed for it.
+	 * @throws NoSuchMethodException
+	 * @throws SecurityException
+	 */
 	private void initializeCommandMap() throws NoSuchMethodException, SecurityException {
 		commandMap.put(CommandConstants.CREATE_PARKING_LOT_COMMAND.getCommand(),CarParkingLot.class.getDeclaredMethod("createParkingLot", String.class));
 		commandMap.put(CommandConstants.PARK_COMMAND.getCommand(), ParkingLot.class.getDeclaredMethod("park", String.class,String.class));
@@ -39,7 +53,8 @@ public final class CarParkingLotCommandExecutor {
 	public void parseAndExecuteTextInput(String command) {
 		String[] inputs = command.split(" ");
 		if(!CommandConstants.CREATE_PARKING_LOT_COMMAND.getCommand().equals(inputs[0]) && !parkingLot.isCreated()){
-			System.out.println("Parking lot not created yet");
+			System.out.println("Parking lot not created yet , Kindly create using create_parking_lot command");
+			return;
 		}
         switch (inputs.length) {
             case 1:
@@ -51,9 +66,11 @@ public final class CarParkingLotCommandExecutor {
                         System.out.println("Invalid input");
                     }
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    throw new InvalidCommandException("Command "+Arrays.toString(inputs) + "not valid");
                 } catch (InvocationTargetException e) {
-                    e.printStackTrace();
+                	throw new InvalidCommandException("Command "+Arrays.toString(inputs) + "not valid");
+                }catch(IllegalArgumentException e){
+                	throw new InvalidCommandException("Command "+Arrays.toString(inputs) + "not valid");
                 }
                 break;
             case 2:
@@ -65,9 +82,11 @@ public final class CarParkingLotCommandExecutor {
                         System.out.println("Invalid input");
                     }
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    throw new InvalidCommandException("Command "+Arrays.toString(inputs) + " not valid");
                 } catch (InvocationTargetException e) {
-                    e.printStackTrace();
+                	throw new InvalidCommandException("Command "+Arrays.toString(inputs)+ " not valid");
+                }catch(IllegalArgumentException e){
+                	throw new InvalidCommandException("Command "+Arrays.toString(inputs) + " not valid");
                 }
                 break;
             case 3:
@@ -79,9 +98,11 @@ public final class CarParkingLotCommandExecutor {
                         System.out.println("Invalid input");
                     }
                 } catch (IllegalAccessException e) {
-                    e.printStackTrace();
+                    throw new InvalidCommandException("Command "+ Arrays.toString(inputs) + " not valid");
                 } catch (InvocationTargetException e) {
-                    e.printStackTrace();
+                	throw new InvalidCommandException("Command "+ Arrays.toString(inputs) + " not valid");
+                }catch(IllegalArgumentException e){
+                	throw new InvalidCommandException("Command "+ Arrays.toString(inputs) + " not valid");
                 }
                 break;
             default:
@@ -90,12 +111,11 @@ public final class CarParkingLotCommandExecutor {
 	}
 
 	public void parseAndExecuteFileInput(String filePath) {
-		// Assuming input to be a valid file path.
         File inputFile = new File(filePath);
         if(inputFile!=null && inputFile.exists() && inputFile.canRead())
         {
-        	try {
-        		BufferedReader br = new BufferedReader(new FileReader(inputFile));
+        	//using try with resources to avoid finally
+        	try (BufferedReader br = new BufferedReader(new FileReader(inputFile));){
         		String line;
         		try {
         			while ((line = br.readLine()) != null) {
@@ -108,7 +128,10 @@ public final class CarParkingLotCommandExecutor {
         } catch (FileNotFoundException e) {
             System.out.println("File not found in the path specified.");
             e.printStackTrace();
-        }
+        } catch (IOException e1) {
+        	  System.out.println("File not found in the path specified.");
+			e1.printStackTrace();
+		}
         }else{
         	System.out.println("Command file does not exist or not readable at path"+filePath);
         }

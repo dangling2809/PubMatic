@@ -1,7 +1,13 @@
 package com.parkinglot.service;
 
 import com.parkinglot.regulations.IGovernmentRegulations;
-
+/**
+ * Base interface to combine {@link IGovernmentRegulations} and 
+ * Parking lot basic requirements.
+ * @author Piyush
+ *
+ * @param <T>
+ */
 public interface ParkingLot<T> extends IGovernmentRegulations{
 
 	public void park(T t);

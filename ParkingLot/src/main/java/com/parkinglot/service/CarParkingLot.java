@@ -5,31 +5,39 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringJoiner;
+import java.util.Map.Entry;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import com.parkinglot.domain.Car;
 import com.parkinglot.domain.ParkingSpace;
 import com.parkinglot.exceptions.InvalidParkingLotSizeException;
 
-
+/**
+ * Concrete implementation of {@link ParkingLot}.
+ * Reflection safe singleton implementation to allow only one instance of {@link CarParkingLot}
+ * per JVM. Implementation is not thread safe currently.
+ * 
+ * @author Piyush
+ *
+ */
 public class CarParkingLot implements ParkingLot<Car>{
 	
 	private static final CarParkingLot INSTANCE=new CarParkingLot();
-	
+	//to track number of cars parked currently
 	private AtomicInteger numberOfCarsParked=new AtomicInteger();
 	
 	private int parkingLotSize=0;//defaults to 0
 	
-	private final StatusFormatter statusFormatter=new StatusFormatter();
-	
+	//parking slots to parking spaces map. Populated via create_parking_lot command
 	private  Map<Integer,ParkingSpace> parkingSpaces;
-	
+	//to apply government regulation
 	private  Map<String,Set<String>> colorToRegistrationNumberMap;
-	
+	//to apply government regulation
 	private  Map<String,Integer> registrationNumberToSlotNumberMap;
-	
+	//to apply government regulation
 	private  Map<String,Set<Integer>> colorToParkingSlotNumberMap;
 	
+	//this flag maintains the state of the parking lot whether it is created fully or not
 	private boolean created=false;
 
 	public static CarParkingLot getInstance()
@@ -51,7 +59,12 @@ public class CarParkingLot implements ParkingLot<Car>{
     protected Object readResolve() {
         return INSTANCE;
     }
-	
+	/**
+	 * Creates parking lot with capacity = parkingLotSizeStr.
+	 * Before creating parking_lot this method also validates 
+	 * that input parameter is Number and greater than 0.If not error message will be shown.
+	 * @param parkingLotSizeStr
+	 */
 	public void createParkingLot(String parkingLotSizeStr){
 			try{
 				int maxSize=validateParkingLotSize(parkingLotSizeStr);
@@ -74,7 +87,12 @@ public class CarParkingLot implements ParkingLot<Car>{
 				System.out.println(ex.getMessage());
 			}
 	}
-	
+	/**
+	 * Validates if the passed argument is a number and greater than zero
+	 * @param parkingLotSizeStr
+	 * @return
+	 * @throws InvalidParkingLotSizeException
+	 */
 	private int validateParkingLotSize(String parkingLotSizeStr) throws InvalidParkingLotSizeException {
 		try{
 			int maxSize=Integer.parseInt(parkingLotSizeStr);
@@ -88,6 +106,9 @@ public class CarParkingLot implements ParkingLot<Car>{
 	}
 
 	@Override
+	/**
+	 * <pre>Executes park <vehicle_reg_no> <color> command</pre>
+	 */
 	public void park(String registrationNumber, String color) {
 		Car car=new Car();
 		car.setColor(color);
@@ -95,6 +116,10 @@ public class CarParkingLot implements ParkingLot<Car>{
 		park(car);
 	}
 	
+	/**
+	 * Parks a Car into nearest vacent spots and also populates
+	 * data structures used for applying government regulations.
+	 */
 	public void park(Car car){
 		if(isFull()){
 			System.out.println("Sorry, parking lot is full");
@@ -117,7 +142,9 @@ public class CarParkingLot implements ParkingLot<Car>{
 			System.out.println("Parking Lot not created First create it using create_parking_lot command");
 		}
 	}
-	
+	/**
+	 * <pre>Executes leave <slot_no> command.</pre>
+	 */
 	public void unpark(String parkingSlotNumberStr){
 		try{
 			int parkingSlotNumber=Integer.parseInt(parkingSlotNumberStr);
@@ -140,7 +167,11 @@ public class CarParkingLot implements ParkingLot<Car>{
 			System.out.println("Inalid Parking Slot Number");
 		}
 	}
-
+	/**
+	 * Populate {@link CarParkingLot} for one of the government regulation
+	 * @param car
+	 * @param parkingSlotNumber
+	 */
 	private void buildColorToParkingSlotNumberMap(Car car, int parkingSlotNumber) {
 		Set<Integer> parkingSlotNumbers=colorToParkingSlotNumberMap.get(car.getColor());
 		if(parkingSlotNumbers==null)
@@ -151,12 +182,21 @@ public class CarParkingLot implements ParkingLot<Car>{
 		parkingSlotNumbers.add(parkingSlotNumber);
 	}
 
+	/**
+	 * Populate {@link CarParkingLot} for one of the government regulation
+	 * @param car
+	 * @param parkingSlotNumber
+	 */
 	private void buildRegistrationNumberToSlotNumberMap(Car car,
 			int parkingSlotNumber) {
 		registrationNumberToSlotNumberMap.put(car.getRegNo(), parkingSlotNumber);
 		
 	}
 
+	/**
+	 * Populate {@link CarParkingLot} for one of the government regulation
+	 * @param car
+	 */
 	private void buildColorToRegistrationNumberMap(Car car) {
 		Set<String> registrationNumbers=colorToRegistrationNumberMap.get(car.getColor());
 		if(registrationNumbers==null)
@@ -180,6 +220,9 @@ public class CarParkingLot implements ParkingLot<Car>{
 	}
 
 	@Override
+	/**
+	 * <pre>Executes registration_numbers_for_cars_with_colour <color> command.</pre>
+	 */
 	public Set<String> getRegistrationNumbersByColor(String color) {
 		if(colorToRegistrationNumberMap.containsKey(color))
 		{
@@ -193,6 +236,9 @@ public class CarParkingLot implements ParkingLot<Car>{
 	}
 
 	@Override
+	/**
+	 * <pre>Executes slot_number_for_registration_number <reg_no> command.</pre>
+	 */
 	public int getSlotNumberByRegistrationNumber(String registrationNumber) {
 		if(registrationNumberToSlotNumberMap.containsKey(registrationNumber))
 		{
@@ -206,6 +252,9 @@ public class CarParkingLot implements ParkingLot<Car>{
 	}
 
 	@Override
+	/**
+	 * <pre>Executes slot_numbers_for_cars_with_colour <color> command.</pre>
+	 */
 	public Set<Integer> getSlotNumbersByColor(String color) {
 		if(colorToParkingSlotNumberMap.containsKey(color))
 		{
@@ -223,15 +272,30 @@ public class CarParkingLot implements ParkingLot<Car>{
 	}
 
 	@Override
+	/**
+	 * <pre>Executes status command.</pre>
+	 */
 	public void displayStatus() {
-		statusFormatter.displayParkingLotStatus(parkingSpaces);
+		 System.out.println("Slot No.\tRegistration No.\tColor");
+		 for(Entry<Integer, ParkingSpace> entry: parkingSpaces.entrySet())
+		 {
+			 ParkingSpace parkingSpace=entry.getValue();
+			 if(!parkingSpace.isVacant() && parkingSpace.getCar()!=null)
+				 System.out.println(entry.getKey() +"\t\t"+ parkingSpace.getCar().getRegNo() +"\t\t"+ parkingSpace.getCar().getColor());
+		 }
 	}
 
 	@Override
+	/**
+	 * Check if parking lot is currently full
+	 */
 	public boolean isFull() {
 		return numberOfCarsParked.intValue()==parkingSpaces.size();
 	}
 
+	/**
+	 * Checks if parking lot is created fully.
+	 */
 	public boolean isCreated() {
 		return created;
 	}

@@ -36,7 +36,8 @@ public final class CarParkingLotCommandExecutor {
 	}
 
 	/**
-	 * Init method to be call from constructor to create a map of commands and method to be executed for it.
+	 * Initialization method to be called from constructor for 
+	 * creating a map of commands and method to be executed for it.
 	 * @throws NoSuchMethodException
 	 * @throws SecurityException
 	 */
@@ -126,14 +127,14 @@ public final class CarParkingLotCommandExecutor {
                 	ex.printStackTrace();
         		}
         } catch (FileNotFoundException e) {
-            System.out.println("File not found in the path specified.");
+            System.out.println("File not found at the path specified.");
             e.printStackTrace();
         } catch (IOException e1) {
-        	  System.out.println("File not found in the path specified.");
+        	  System.out.println("File not found at the path specified.");
 			e1.printStackTrace();
 		}
         }else{
-        	System.out.println("Command file does not exist or not readable at path"+filePath);
+        	System.out.println("Command file does not exist or not readable at path -> "+filePath);
         }
 	}
 	

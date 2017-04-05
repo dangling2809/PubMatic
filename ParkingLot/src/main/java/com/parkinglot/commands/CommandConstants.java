@@ -1,5 +1,9 @@
 package com.parkinglot.commands;
 
+/**
+ * All supported commands in system.
+ * @author Piyush
+ */
 public enum CommandConstants {
 
 	PARK_COMMAND("park"),

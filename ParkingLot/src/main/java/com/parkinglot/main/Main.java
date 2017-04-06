@@ -10,7 +10,7 @@ import com.parkinglot.exceptions.InvalidCommandException;
 import com.parkinglot.service.CarParkingLot;
 
 public class Main {
-    public static void main(String[] args) throws NoSuchMethodException, SecurityException {
+    public static void main(String[] args) throws NoSuchMethodException, SecurityException, InstantiationException {
     	if(args!=null){
     	CarParkingLotCommandExecutor commandExecutor = new CarParkingLotCommandExecutor(CarParkingLot.getInstance());
         switch (args.length) {

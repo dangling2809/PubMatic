@@ -28,10 +28,13 @@ public final class CarParkingLotCommandExecutor {
 	private final Map<String,Method> commandMap;
 	private final ParkingLot<Car> parkingLot;
 
-	public CarParkingLotCommandExecutor(ParkingLot<Car> parkingLot) throws NoSuchMethodException, SecurityException {
+	public CarParkingLotCommandExecutor(ParkingLot<Car> parkingLot) throws NoSuchMethodException, SecurityException, InstantiationException {
 		super();
 		this.commandMap =new HashMap<String,Method>();
-		this.parkingLot = parkingLot;
+		if(parkingLot!=null)
+			this.parkingLot = parkingLot;
+		else
+			throw new InstantiationException("Parking Lot instance cannot be null");
 		initializeCommandMap();
 	}
 

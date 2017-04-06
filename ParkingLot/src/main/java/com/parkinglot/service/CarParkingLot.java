@@ -69,6 +69,8 @@ public class CarParkingLot implements ParkingLot<Car>{
 			try{
 				int maxSize=validateParkingLotSize(parkingLotSizeStr);
 				this.parkingLotSize = maxSize;
+				this.created=false;
+				this.numberOfCarsParked=new AtomicInteger();
 				this.parkingSpaces=new LinkedHashMap<Integer,ParkingSpace>(parkingLotSize);
 				this.colorToRegistrationNumberMap=new LinkedHashMap<>(parkingLotSize);
 				this.registrationNumberToSlotNumberMap=new LinkedHashMap<>(parkingLotSize);
@@ -84,6 +86,7 @@ public class CarParkingLot implements ParkingLot<Car>{
 				System.out.println("Created a parking lot with "+ parkingLotSizeStr +" slots");
 			}catch(InvalidParkingLotSizeException ex)
 			{
+				this.created=false;
 				System.out.println(ex.getMessage());
 			}
 	}
@@ -110,10 +113,15 @@ public class CarParkingLot implements ParkingLot<Car>{
 	 * <pre>Executes park <vehicle_reg_no> <color> command</pre>
 	 */
 	public void park(String registrationNumber, String color) {
-		Car car=new Car();
-		car.setColor(color);
-		car.setRegNo(registrationNumber);
-		park(car);
+		if((registrationNumber!=null && !registrationNumber.isEmpty()) && (color!=null && !color.isEmpty()))
+		{
+			Car car=new Car();
+			car.setColor(color);
+			car.setRegNo(registrationNumber);
+			park(car);
+		}else{
+			System.out.println("Registration number and Color can not be null");
+		}
 	}
 	
 	/**
@@ -125,7 +133,7 @@ public class CarParkingLot implements ParkingLot<Car>{
 			System.out.println("Sorry, parking lot is full");
 		}else if(isCreated()){
 			int parkingSlotNumber=getNearestVacantSpot();
-			if(parkingSlotNumber!=-1)
+			if(parkingSlotNumber!=-1 && car!=null)
 			{
 				ParkingSpace parkingSpace=parkingSpaces.get(parkingSlotNumber);
 				parkingSpace.setVacant(false);
@@ -136,7 +144,7 @@ public class CarParkingLot implements ParkingLot<Car>{
 				numberOfCarsParked.getAndIncrement();
 				System.out.println("Allocated slot number: "+ parkingSlotNumber);
 			}else{
-				System.out.println("Sorry, parking lot is full");
+				System.out.println("Sorry, parking lot is full or Car is not allowed");
 			}
 		}else{
 			System.out.println("Parking Lot not created First create it using create_parking_lot command");
@@ -149,6 +157,8 @@ public class CarParkingLot implements ParkingLot<Car>{
 		try{
 			int parkingSlotNumber=Integer.parseInt(parkingSlotNumberStr);
 			ParkingSpace parkingSpace=parkingSpaces.get(parkingSlotNumber);
+			if(parkingSpace!=null)
+			{
 			if(!parkingSpace.isVacant())
 			{
 				parkingSpace.setVacant(true);
@@ -161,6 +171,9 @@ public class CarParkingLot implements ParkingLot<Car>{
 				System.out.println("Slot number "+ parkingSlotNumber +" is free");
 			}else{
 				System.out.println("Slot number "+ parkingSlotNumber +" is not occupied");
+			}
+			}else{
+				System.out.println("Slot number does not exist");
 			}
 		}catch(NumberFormatException ex)
 		{
@@ -224,7 +237,7 @@ public class CarParkingLot implements ParkingLot<Car>{
 	 * <pre>Executes registration_numbers_for_cars_with_colour <color> command.</pre>
 	 */
 	public Set<String> getRegistrationNumbersByColor(String color) {
-		if(colorToRegistrationNumberMap.containsKey(color))
+		if(isCreated() && colorToRegistrationNumberMap.containsKey(color))
 		{
 			Set<String> registrationNumbers=colorToRegistrationNumberMap.get(color);
 			System.out.println(String.join(",", registrationNumbers));
@@ -240,7 +253,7 @@ public class CarParkingLot implements ParkingLot<Car>{
 	 * <pre>Executes slot_number_for_registration_number <reg_no> command.</pre>
 	 */
 	public int getSlotNumberByRegistrationNumber(String registrationNumber) {
-		if(registrationNumberToSlotNumberMap.containsKey(registrationNumber))
+		if(isCreated() && registrationNumberToSlotNumberMap.containsKey(registrationNumber))
 		{
 			int slotNumber=registrationNumberToSlotNumberMap.get(registrationNumber);
 			System.out.println(slotNumber);
@@ -256,7 +269,7 @@ public class CarParkingLot implements ParkingLot<Car>{
 	 * <pre>Executes slot_numbers_for_cars_with_colour <color> command.</pre>
 	 */
 	public Set<Integer> getSlotNumbersByColor(String color) {
-		if(colorToParkingSlotNumberMap.containsKey(color))
+		if(isCreated() && colorToParkingSlotNumberMap.containsKey(color))
 		{
 			Set<Integer> slotNumbers=colorToParkingSlotNumberMap.get(color);
 			StringJoiner joiner = new StringJoiner(",");
@@ -299,4 +312,21 @@ public class CarParkingLot implements ParkingLot<Car>{
 	public boolean isCreated() {
 		return created;
 	}
+
+	public int getParkingLotSize() {
+		return parkingLotSize;
+	}
+
+	public Map<Integer, ParkingSpace> getParkingSpaces() {
+		return parkingSpaces;
+	}
+
+	public AtomicInteger getNumberOfCarsParked() {
+		return numberOfCarsParked;
+	}
+
+	public void setCreated(boolean created) {
+		this.created = created;
+	}
+	
 }

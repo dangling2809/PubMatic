@@ -11,6 +11,8 @@
   </properties>
 	
     <build>
+    	<sourceDirectory>src/main/java</sourceDirectory>
+         <testSourceDirectory>src/main/test</testSourceDirectory> 
         <finalName>ParkingLot</finalName>
        <plugins>
   			 <plugin>
@@ -44,4 +46,11 @@
   </plugin>
   </plugins>
     </build>
+    <dependencies>
+    	<dependency>
+            <groupId>junit</groupId>
+            <artifactId>junit</artifactId>
+            <version>4.12</version>
+        </dependency>
+    </dependencies>
 </project>

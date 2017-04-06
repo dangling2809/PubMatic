@@ -13,8 +13,6 @@ public class Main {
     public static void main(String[] args) throws NoSuchMethodException, SecurityException {
     	if(args!=null){
     	CarParkingLotCommandExecutor commandExecutor = new CarParkingLotCommandExecutor(CarParkingLot.getInstance());
-    	
-    	
         switch (args.length) {
             case 0:
             	System.out.println("Enter 'exit' to quit");
